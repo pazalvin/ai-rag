@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.env
+.DS_Store
+*.log
+public/app.js
+public/app.js.map
+
+# Next.js
+.next/
+*.tsbuildinfo
+
+# Python
+.venv/
+__pycache__/
+*.egg-info/
+.pytest_cache/

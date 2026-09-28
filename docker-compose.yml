@@ -1,0 +1,119 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: loan
+      POSTGRES_PASSWORD: loan
+      POSTGRES_DB: loan_rag
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U loan -d loan_rag"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 20s
+
+  ollama-init:
+    image: ollama/ollama:latest
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    restart: "no"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        echo "Pulling llama3.2:1b..."
+        ollama pull llama3.2:1b
+        echo "Pulling nomic-embed-text..."
+        ollama pull nomic-embed-text
+        echo "Models ready."
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/ts/Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgres://loan:loan@postgres:5432/loan_rag
+      OLLAMA_BASE_URL: http://ollama:11434
+      LLM_MODEL: llama3.2:1b
+      EMBED_MODEL: nomic-embed-text
+      EMBEDDING_DIMENSIONS: 768
+      TOP_K: 3
+      CHUNK_SIZE: 400
+      CHUNK_OVERLAP: 50
+    volumes:
+      - ./data/guidelines:/app/data/guidelines:ro
+      - ./data/rules:/app/data/rules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+      ollama-init:
+        condition: service_completed_successfully
+
+  # FastAPI port of the same API. Opt in with: docker compose --profile python up
+  api-python:
+    profiles: ["python"]
+    build:
+      context: .
+      dockerfile: apps/python/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: 8000
+      DATABASE_URL: postgres://loan:loan@postgres:5432/loan_rag
+      OLLAMA_BASE_URL: http://ollama:11434
+      LLM_MODEL: llama3.2:1b
+      EMBED_MODEL: nomic-embed-text
+      EMBEDDING_DIMENSIONS: 768
+      TOP_K: 3
+      CHUNK_SIZE: 400
+      CHUNK_OVERLAP: 50
+    volumes:
+      - ./data/guidelines:/app/data/guidelines:ro
+      - ./data/rules:/app/data/rules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+      ollama-init:
+        condition: service_completed_successfully
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      API_URL: http://api:3001
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  ollama_data:

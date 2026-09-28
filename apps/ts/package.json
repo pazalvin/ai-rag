@@ -1,0 +1,43 @@
+{
+  "name": "api",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Loan eligibility RAG with Hono, TypeScript, PostgreSQL pgvector, and Ollama",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "tsx src/index.ts",
+    "ingest": "tsx src/rag/ingest.ts",
+    "generate:pdf": "tsx scripts/generate-loan-policy-pdf.ts",
+    "generate:applicant-pdfs": "tsx scripts/generate-applicant-pdfs.ts",
+    "generate:proof-pdfs": "tsx scripts/generate-proof-pdfs.ts",
+    "generate:testdata": "npm run generate:applicant-pdfs && npm run generate:proof-pdfs",
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "tsx --test tests/unit/*.test.ts tests/evaluateRules.test.ts tests/rulesApi.test.ts",
+    "test:integration": "ELIGIBILITY_OFFLINE=1 tsx --test tests/integration/*.test.ts tests/pdfApplicationSuite.test.ts tests/pdfUploadRoute.test.ts",
+    "test:watch": "tsx --test --watch tests/unit/*.test.ts tests/integration/*.test.ts tests/*.test.ts",
+    "db:migrate": "tsx src/db/migrate.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.14.1",
+    "@hono/zod-validator": "^0.5.0",
+    "axios": "^1.19.0",
+    "drizzle-orm": "^0.43.1",
+    "hono": "^4.7.7",
+    "postgres": "^3.4.5",
+    "tsx": "^4.19.3",
+    "unpdf": "^1.6.2",
+    "zod": "^3.24.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.1",
+    "@types/pdfkit": "^0.17.6",
+    "pdfkit": "^0.19.1",
+    "typescript": "^5.8.3"
+  }
+}

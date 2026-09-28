@@ -1,0 +1,68 @@
+{
+  "version": "1.2",
+  "description": "Editable underwriting rules including proof-document verification (payslip, bank statement, etc.).",
+  "age": {
+    "min": 21,
+    "max": 65
+  },
+  "allowedEmploymentStatuses": ["employed", "self-employed", "contract"],
+  "incomeFloorMonthly": 20000,
+  "maxLoanAmount": 500000,
+  "loanTermMonths": {
+    "min": 12,
+    "max": 60
+  },
+  "maxDti": 0.4,
+  "maxInstallmentToIncomeRatio": 0.4,
+  "incomeBands": [
+    {
+      "maxLoanAmount": 100000,
+      "minMonthlyIncome": 20000,
+      "label": "up to 100,000"
+    },
+    {
+      "maxLoanAmount": 250000,
+      "minMonthlyIncome": 40000,
+      "label": "100,001–250,000"
+    },
+    {
+      "maxLoanAmount": 500000,
+      "minMonthlyIncome": 60000,
+      "label": "250,001–500,000"
+    }
+  ],
+  "tenure": {
+    "loanAmountThreshold": 200000,
+    "byEmploymentStatus": {
+      "employed": {
+        "atOrBelowThresholdMonths": 6,
+        "aboveThresholdMonths": 12
+      },
+      "contract": {
+        "atOrBelowThresholdMonths": 6,
+        "aboveThresholdMonths": 12
+      },
+      "self-employed": {
+        "atOrBelowThresholdMonths": 12,
+        "aboveThresholdMonths": 24
+      }
+    }
+  },
+  "creditScore": {
+    "declineBelow": 580,
+    "restrictedBand": {
+      "min": 580,
+      "max": 649,
+      "maxDti": 0.3,
+      "maxLoanAmount": 150000
+    }
+  },
+  "documentVerification": {
+    "required": true,
+    "minProofDocuments": 1,
+    "acceptedTypes": ["payslip", "bank_statement", "employment_certificate"],
+    "incomeMatchTolerancePercent": 15,
+    "requireNameMatch": true,
+    "rejectUnknownTypes": true
+  }
+}

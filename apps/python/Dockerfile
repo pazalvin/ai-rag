@@ -1,0 +1,18 @@
+# Build context: repository root (see docker-compose.yml)
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PORT=8000
+
+WORKDIR /app/apps/python
+
+COPY apps/python/pyproject.toml ./
+COPY apps/python/app ./app
+RUN pip install --no-cache-dir .
+
+COPY data/guidelines /app/data/guidelines
+COPY data/rules /app/data/rules
+
+EXPOSE 8000
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT}"]

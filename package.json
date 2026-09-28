@@ -1,0 +1,30 @@
+{
+  "name": "ai-document",
+  "private": true,
+  "workspaces": [
+    "apps/web",
+    "apps/ts",
+    "packages/*"
+  ],
+  "scripts": {
+    "deps:up": "docker compose up -d postgres ollama && docker compose run --rm ollama-init",
+    "deps:down": "docker compose stop postgres ollama",
+    "dev": "concurrently -k -n api,web -c blue,green \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:web": "npm run dev -w web",
+    "dev:api": "npm run dev -w api",
+    "dev:api:py": "cd apps/python && .venv/bin/uvicorn app.main:app --reload --port 8000",
+    "dev:py": "concurrently -k -n api-py,web -c yellow,green \"npm run dev:api:py\" \"API_URL=http://localhost:8000 npm run dev:web\"",
+    "start:local": "npm run deps:up && concurrently -k -n api,web -c blue,green \"npm run start -w api\" \"npm run start -w web\"",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm test -w api",
+    "test:py": "cd apps/python && .venv/bin/pytest"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
